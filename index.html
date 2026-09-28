@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Aevia turns your subjects, deadlines and exam dates into a day-by-day study plan.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<title>Aevia Study Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Big+Shoulders+Display:wght@500;700;800&family=Hanken+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Aevia commits to one dark-academia look: charcoal, bronze and candlelight. */
+:root{
+  color-scheme:dark;
+  --bg:#11100E; --card:#1B1916; --card-2:#221F1B; --line:#2E2923; --line-2:#3E362C;
+  --ink:#EEE7DB; --muted:#A99D8C; --dim:#71685B;
+  --bronze:#C9A176; --bronze-hi:#EDCFA3; --bronze-lo:#7C5C3F;
+  --ok:#A7C08F; --warn:#DE9670; --info:#9DB4C9;
+  --grad:linear-gradient(180deg,#EFD2A6 0%,#C9A176 55%,#8E6A48 100%);
+  --sky-top:#0C0B0A; --sky-bot:#2B2219; --sun:#EAD3AC;
+  --hill-far:#3A2F25; --hill-mid:#261F19; --hill-near:#15120F; --pole:#0A0908;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Playfair Display",Didot,"Bodoni 72",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+img{max-width:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding-inline:clamp(16px,3vw,40px)}
+.wrap{max-width:1360px;margin-inline:auto;display:flex;flex-direction:column;gap:clamp(72px,9vw,128px);padding-block:20px 40px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;border-radius:6px}
+h1,h2,h3{font-family:var(--display);text-transform:uppercase;letter-spacing:.01em;line-height:.92;margin:0;text-wrap:balance}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--bronze)}
+.gold{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* nav */
+nav{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--serif);font-weight:500;font-size:32px;letter-spacing:.005em;color:var(--ink)}
+.mark{width:40px;height:40px;color:var(--ink);flex:none}
+.links{display:flex;gap:30px;align-items:center;flex-wrap:wrap}
+.links a{text-decoration:none;font-weight:500;font-size:15px;color:var(--muted)}
+.links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:10px;border:0;cursor:pointer;font:600 15px/1 var(--body);padding:14px 22px;border-radius:999px;background:var(--grad);color:#1A140E;text-decoration:none;transition:transform .2s ease,box-shadow .2s ease;box-shadow:0 8px 24px -10px rgba(201,161,118,.6)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 12px 30px -10px rgba(201,161,118,.8)}
+.links a.btn{color:#1A140E}
+
+/* hero window */
+.window{position:relative;aspect-ratio:21/9;max-width:100%;border-radius:clamp(20px,3vw,44px);overflow:hidden;background:var(--sky-bot);box-shadow:0 0 0 10px var(--card),0 0 0 11px var(--line-2),0 40px 80px -30px rgba(0,0,0,.8);margin:11px}
+.window canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.window::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,transparent 42%,rgba(8,7,6,.78) 100%);pointer-events:none}
+.hero-copy{position:absolute;left:clamp(20px,4vw,64px);right:clamp(20px,4vw,64px);bottom:clamp(20px,4vw,56px);z-index:2;display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap}
+.hero-copy h1{font-size:clamp(52px,8.6vw,138px);font-weight:800;max-width:11ch;color:#F3ECE0}
+.hero-side{max-width:36ch;display:flex;flex-direction:column;gap:18px}
+.hero-side p{font-size:clamp(15px,1.3vw,18px);color:rgba(243,236,224,.86)}
+.hero-side .btn{align-self:flex-start;background:#F3ECE0;box-shadow:none}
+.km{position:absolute;top:clamp(16px,2.4vw,32px);left:clamp(20px,4vw,64px);z-index:2;font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:#F3ECE0;background:rgba(12,10,8,.5);backdrop-filter:blur(6px);padding:8px 12px;border-radius:999px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px}
+.km i{width:7px;height:7px;border-radius:50%;background:var(--bronze-hi);box-shadow:0 0 10px var(--bronze)}
+
+/* section heads */
+section{display:flex;flex-direction:column;gap:clamp(28px,3.5vw,48px)}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.sec-head > div{display:flex;flex-direction:column;gap:14px}
+.sec-head h2{font-size:clamp(42px,5.6vw,84px);font-weight:800;max-width:15ch}
+.sec-head p{max-width:46ch;color:var(--muted)}
+
+/* dashboard preview */
+.device{background:var(--card);border:1px solid var(--line-2);border-radius:28px;padding:14px;display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;box-shadow:0 50px 100px -40px rgba(0,0,0,.9)}
+.rail{background:var(--bg);border-radius:18px;display:flex;flex-direction:column;align-items:center;gap:22px;padding-block:18px}
+.rail span{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;color:var(--dim)}
+.rail span:first-child{background:var(--grad);color:#1A140E}
+.rail svg{width:16px;height:16px}
+.dash{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+.tile{background:var(--card-2);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.tile h4{margin:0;font-family:var(--mono);font-weight:500;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.c4{grid-column:span 4}.c3{grid-column:span 3}.c5{grid-column:span 5}.c7{grid-column:span 7}.c8{grid-column:span 8}
+.hello{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;overflow:hidden}
+.hello b{display:block;font-size:22px;font-weight:600}
+.hello small{color:var(--muted);font-size:13px}
+.hello svg{width:120px;height:96px;flex:none}
+.stat .n{font-size:38px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.stat .d{font-size:12px;color:var(--ok);font-family:var(--mono)}
+.stat svg{width:100%;height:46px;margin-top:auto}
+.ring{display:flex;align-items:center;gap:16px}
+.ring svg{width:92px;height:92px;flex:none}
+.ring p{font-size:13px;color:var(--muted)}
+.play{gap:6px}
+.track{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.track:last-child{border-bottom:0}
+.track time{font-family:var(--mono);font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.track em{font-style:normal;color:var(--muted);font-size:12.5px;display:block}
+.track .chip{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:4px 8px;border-radius:999px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap}
+.track.now{background:linear-gradient(90deg,rgba(201,161,118,.12),transparent);margin-inline:-18px;padding-inline:18px;border-radius:0}
+.track.now time{color:var(--bronze-hi)}
+.track.now .chip{border-color:var(--bronze);color:var(--bronze-hi)}
+.track.done{opacity:.55}
+.track.done .chip{color:var(--ok);border-color:rgba(167,192,143,.4)}
+.subj{display:flex;flex-direction:column;gap:14px}
+.subj div{display:grid;grid-template-columns:1fr auto;gap:6px 10px;font-size:14px}
+.subj small{color:var(--dim);font-family:var(--mono);font-size:11px}
+.bar{grid-column:1/-1;height:4px;border-radius:4px;background:var(--line)}
+.bar i{display:block;height:100%;border-radius:4px;background:var(--grad)}
+.subj b{font-variant-numeric:tabular-nums;font-weight:600}
+.week{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;height:150px;padding-top:6px}
+.week div{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%}
+.week .col{flex:1;width:14px;border-radius:14px;background:var(--line);display:flex;align-items:flex-end;overflow:hidden}
+.week .col i{width:100%;border-radius:14px;background:var(--grad)}
+.week span{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+.week .today span{color:var(--bronze-hi)}
+.dl{width:100%;border-collapse:collapse;font-size:13.5px}
+.dl td{padding:9px 8px 9px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.dl tr:last-child td{border-bottom:0}
+.dl td:first-child{white-space:normal}
+.dl .muted{color:var(--muted);font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+.pill{font-family:var(--mono);font-size:10.5px;padding:3px 8px;border-radius:999px;border:1px solid}
+.p-hi{color:var(--warn);border-color:rgba(222,150,112,.45)}
+.p-md{color:var(--bronze-hi);border-color:rgba(201,161,118,.45)}
+.p-ok{color:var(--ok);border-color:rgba(167,192,143,.45)}
+.p-in{color:var(--info);border-color:rgba(157,180,201,.45)}
+.tip{background:linear-gradient(135deg,rgba(201,161,118,.16),var(--card-2) 60%)}
+.tip p{font-size:15px;line-height:1.5}
+.tip small{color:var(--muted);font-size:12.5px}
+.example{align-self:flex-start;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border:1px dashed var(--line-2);border-radius:999px;padding:6px 12px}
+
+/* features */
+.feats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line-2)}
+.feat{padding:28px 28px 28px 0;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid var(--line)}
+.feat:not(:nth-child(3n+1)){padding-left:28px;border-left:1px solid var(--line)}
+.feat svg{width:26px;height:26px;color:var(--bronze)}
+.feat h3{font-size:28px;font-weight:700}
+.feat p{color:var(--muted);max-width:38ch;font-size:15px}
+
+/* tools */
+.tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.tool{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:clamp(22px,2.6vw,32px);display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden}
+.tool.star{border-color:var(--line-2);background:radial-gradient(120% 90% at 100% 0%,rgba(201,161,118,.13),transparent 55%),var(--card)}
+.tool-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.tool h3{font-size:clamp(32px,3vw,44px);font-weight:800}
+.tool > p{color:var(--muted);max-width:48ch}
+.ask{font-family:var(--mono);font-size:13px;background:var(--bg);border:1px solid var(--line-2);border-radius:12px;padding:12px 14px;color:var(--ink);display:flex;gap:10px}
+.ask::before{content:"›";color:var(--bronze)}
+.ans{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.ans .row{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed var(--line-2)}
+.ans .row:last-child{border-bottom:0}
+.ans .row span:first-child{font-family:var(--mono);font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.delta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.delta div{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px}
+.delta b{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.delta b s{color:var(--dim);text-decoration:none;font-weight:400;font-size:16px}
+.delta small{font-size:11.5px;color:var(--muted)}
+.note{font-size:14px;color:var(--ink);border-left:2px solid var(--bronze);padding-left:12px;font-style:italic}
+.score{display:flex;align-items:center;gap:14px}
+.score b{font-family:var(--display);font-size:54px;font-weight:800;line-height:1}
+.score small{color:var(--muted);font-size:13px}
+.flag{font-size:14px;background:rgba(222,150,112,.08);border:1px solid rgba(222,150,112,.3);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.flag s{color:var(--warn)}
+
+/* how */
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.how div{padding:26px 28px 0 0;display:flex;flex-direction:column;gap:12px;border-top:1.5px solid var(--bronze-lo)}
+.how div + div{padding-left:28px}
+.how .t{font-family:var(--mono);font-size:12.5px;color:var(--bronze);letter-spacing:.08em}
+.how h3{font-size:34px;font-weight:700}
+.how p{color:var(--muted);max-width:40ch}
+.trust{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(24px,4vw,60px);align-items:start;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:clamp(24px,3.5vw,44px)}
+.trust h3{font-size:clamp(30px,3vw,42px);font-weight:800}
+.trust p{color:var(--muted)}
+.trust p b{color:var(--ink);font-weight:600}
+
+/* questions */
+.qs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:14px}
+.q .eyebrow{color:var(--muted)}
+.q h3{font-size:32px;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.chips button{font:500 14px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line-2);border-radius:999px;padding:10px 16px;cursor:pointer;transition:border-color .15s ease}
+.chips button:hover{border-color:var(--bronze)}
+.chips button[aria-pressed="true"]{background:var(--grad);color:#1A140E;border-color:transparent}
+.go{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.go p{color:var(--muted);font-size:15px}
+
+footer{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:28px;color:var(--dim);font-size:14px}
+footer .brand{display:flex;align-items:center;gap:12px}
+footer .brand .mark{width:48px;height:48px}
+footer .brand b{display:block;font-family:var(--serif);font-weight:500;font-size:28px;line-height:1;color:var(--ink)}
+footer .brand small{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--bronze)}
+
+@media (max-width:1080px){
+  .c4,.c3,.c5,.c7,.c8{grid-column:span 6}
+  .feats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .feat:not(:nth-child(3n+1)){padding-left:0;border-left:0}
+  .feat:nth-child(2n){padding-left:28px;border-left:1px solid var(--line)}
+  .tools,.trust{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .links a:not(.btn){display:none}
+  .window{aspect-ratio:auto;min-height:560px;margin:6px;box-shadow:0 0 0 6px var(--card),0 0 0 7px var(--line-2)}
+  .device{grid-template-columns:1fr;padding:10px}
+  .rail{display:none}
+  .c4,.c3,.c5,.c7,.c8{grid-column:1/-1}
+  .feats,.how,.qs{grid-template-columns:1fr}
+  .feat:nth-child(2n){padding-left:0;border-left:0}
+  .how div + div{padding-left:0;margin-top:28px}
+  .delta{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  .btn,.chips button{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav aria-label="Main">
+    <a class="logo" href="#top" aria-label="Aevia home">
+      <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#8E6A48"/><stop offset=".55" stop-color="#C9A176"/><stop offset="1" stop-color="#EFD2A6"/></linearGradient></defs>
+        <path d="M49 5 L57 5 L88 90 L70 90 L52 36 Z" fill="currentColor"/>
+        <path d="M49 5 L52 12 L26 90 L20 90 Z" fill="currentColor"/>
+        <path d="M13 90 C30 66 55 49 86 50 C62 55 40 68 24 90 Z" fill="url(#lg)"/>
+      </svg>
+      <span>Aevia</span>
+    </a>
+    <div class="links">
+      <a href="#preview">Dashboard</a>
+      <a href="#features">Features</a>
+      <a href="#tools">AI tools</a>
+      <a href="#how">How it works</a>
+      <a class="btn" href="#start">Start planning</a>
+    </div>
+  </nav>
+
+  <header id="top">
+    <div class="window">
+      <canvas id="scene" aria-hidden="true"></canvas>
+      <div class="km"><i></i><span id="focus">FOCUS 25:00 · DBMS · SESSION 2 OF 4</span></div>
+      <div class="hero-copy">
+        <h1>Your semester, <span class="gold">sorted.</span></h1>
+        <div class="hero-side">
+          <p>Aevia turns your subjects, deadlines and exam dates into a day-by-day study plan. When life gets in the way, it replans in seconds and shows you what changed.</p>
+          <a class="btn" href="#start">Build my study plan
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="preview">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">Your dashboard</span>
+        <h2>Everything for today, <span class="gold">on one screen</span></h2>
+      </div>
+      <p>Your sessions, how ready you are for each exam, and what's due next. Open Aevia, press play on the first session, and start.</p>
+    </div>
+
+    <div class="device" aria-label="Example dashboard for a demo student">
+      <div class="rail" aria-hidden="true">
+        <span><svg viewBox="0 0 16 16"><path d="M2 7l6-5 6 5v7H2z" fill="currentColor"/></svg></span>
+        <span><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor"/><rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor"/><rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor"/><rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor"/></svg></span>
+        <span><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 7h12M5 1v4M11 1v4" stroke="currentColor" stroke-width="1.5"/></svg></span>
+        <span><svg viewBox="0 0 16 16"><path d="M3 13V8M8 13V3M13 13V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <span><svg viewBox="0 0 16 16"><path d="M8 1l1.8 4.6L14 7l-4.2 1.4L8 13 6.2 8.4 2 7l4.2-1.4z" fill="currentColor"/></svg></span>
+      </div>
+
+      <div class="dash">
+        <div class="tile hello c5">
+          <div>
+            <span class="example">Example · demo student</span>
+            <b style="margin-top:14px">Good evening, Riya</b>
+            <small>4 sessions today · 3 h 10 min planned</small>
+          </div>
+          <svg viewBox="0 0 120 96" aria-hidden="true">
+            <defs><radialGradient id="moon" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#F3DDB8"/><stop offset=".6" stop-color="#A9855E"/><stop offset="1" stop-color="#3A2C1F"/></radialGradient></defs>
+            <ellipse cx="60" cy="48" rx="54" ry="30" fill="none" stroke="#5A4836" stroke-width="1"/>
+            <ellipse cx="60" cy="48" rx="40" ry="44" fill="none" stroke="#3E362C" stroke-width="1" transform="rotate(35 60 48)"/>
+            <circle cx="60" cy="48" r="24" fill="url(#moon)"/>
+            <circle cx="112" cy="40" r="3" fill="#EDCFA3"/><circle cx="14" cy="62" r="2" fill="#C9A176"/><circle cx="84" cy="10" r="1.6" fill="#C9A176"/>
+          </svg>
+        </div>
+        <div class="tile stat c4">
+          <h4>Hours studied this week</h4>
+          <span class="n">14.5</span>
+          <span class="d">▲ 18% vs last week</span>
+          <svg viewBox="0 0 200 46" preserveAspectRatio="none" aria-hidden="true">
+            <defs><linearGradient id="sa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9A176" stop-opacity=".35"/><stop offset="1" stop-color="#C9A176" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0 38 L25 34 L50 36 L75 26 L100 30 L125 18 L150 22 L175 10 L200 6 L200 46 L0 46Z" fill="url(#sa)"/>
+            <path d="M0 38 L25 34 L50 36 L75 26 L100 30 L125 18 L150 22 L175 10 L200 6" fill="none" stroke="#C9A176" stroke-width="1.6"/>
+          </svg>
+        </div>
+        <div class="tile c3">
+          <h4>Exam readiness</h4>
+          <div class="ring">
+            <svg viewBox="0 0 92 92" aria-hidden="true">
+              <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EFD2A6"/><stop offset="1" stop-color="#8E6A48"/></linearGradient></defs>
+              <circle cx="46" cy="46" r="38" fill="none" stroke="#2E2923" stroke-width="7"/>
+              <circle cx="46" cy="46" r="38" fill="none" stroke="url(#rg)" stroke-width="7" stroke-linecap="round" stroke-dasharray="186.2 238.8" transform="rotate(-90 46 46)"/>
+              <text x="46" y="52" text-anchor="middle" fill="#EEE7DB" font-family="Hanken Grotesk, sans-serif" font-size="20" font-weight="600">78%</text>
+            </svg>
+            <p>Target 85% by 14 Oct</p>
+          </div>
+        </div>
+
+        <div class="tile play c7">
+          <h4>Today's playlist</h4>
+          <div class="track done"><time>16:00</time><div>Maths III · Laplace transforms<em>45 min · practice set</em></div><span class="chip">✓ Done</span></div>
+          <div class="track now"><time>18:30</time><div>DBMS · Normalization to 3NF<em>50 min · exam in 9 days</em></div><span class="chip" id="chip-now">▶ 24:59 left</span></div>
+          <div class="track"><time>19:35</time><div>Operating Systems · Deadlocks<em>40 min · confidence 2/5</em></div><span class="chip">Up next</span></div>
+          <div class="track"><time>20:30</time><div>Networks lab report · final pass<em>55 min · due Thursday</em></div><span class="chip">Queued</span></div>
+        </div>
+        <div class="tile c5">
+          <h4>Subjects · % ready</h4>
+          <div class="subj">
+            <div><span>DBMS</span><b>62%</b><span class="bar"><i style="width:62%"></i></span><small>Exam in 9 days</small></div>
+            <div><span>Operating Systems</span><b>48%</b><span class="bar"><i style="width:48%"></i></span><small>Exam in 6 days</small></div>
+            <div><span>Maths III</span><b>71%</b><span class="bar"><i style="width:71%"></i></span><small>Exam in 13 days</small></div>
+            <div><span>Computer Networks</span><b>55%</b><span class="bar"><i style="width:55%"></i></span><small>Exam in 16 days</small></div>
+          </div>
+        </div>
+
+        <div class="tile c4">
+          <h4>This week · hours</h4>
+          <div class="week" aria-hidden="true">
+            <div><span class="col"><i style="height:55%"></i></span><span>MON</span></div>
+            <div><span class="col"><i style="height:80%"></i></span><span>TUE</span></div>
+            <div><span class="col"><i style="height:62%"></i></span><span>WED</span></div>
+            <div class="today"><span class="col"><i style="height:48%"></i></span><span>THU</span></div>
+            <div><span class="col"><i style="height:30%"></i></span><span>FRI</span></div>
+            <div><span class="col"><i style="height:70%"></i></span><span>SAT</span></div>
+            <div><span class="col"><i style="height:20%"></i></span><span>SUN</span></div>
+          </div>
+        </div>
+        <div class="tile c5">
+          <h4>Deadlines</h4>
+          <table class="dl">
+            <tr><td>Networks lab report</td><td class="muted">Thu 1 Oct</td><td><span class="pill p-hi">High</span></td><td><span class="pill p-in">In progress</span></td></tr>
+            <tr><td>OS assignment 3</td><td class="muted">Mon 5 Oct</td><td><span class="pill p-md">Medium</span></td><td><span class="pill p-md">To do</span></td></tr>
+            <tr><td>Maths quiz prep</td><td class="muted">Wed 30 Sep</td><td><span class="pill p-md">Medium</span></td><td><span class="pill p-ok">Done</span></td></tr>
+          </table>
+        </div>
+        <div class="tile tip c3">
+          <h4>Tip of the day</h4>
+          <p>OS is your weakest subject and the closest exam. Do it before dinner, while you're fresh.</p>
+          <small>Based on your confidence and exam dates</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">What's inside</span>
+        <h2>A planner that knows <span class="gold">what's due</span></h2>
+      </div>
+      <p>Tell Aevia about your semester once. It keeps track of the rest.</p>
+    </div>
+    <div class="feats">
+      <div class="feat">
+        <svg viewBox="0 0 26 26" aria-hidden="true"><rect x="3" y="4" width="20" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h20M9 2v4M17 2v4" stroke="currentColor" stroke-width="1.6"/></svg>
+        <h3>Weekly timetable</h3>
+        <p>Built for you from your exams and deadlines. Subjects are mixed each day, and the day before every exam is kept for revision.</p>
+      </div>
+      <div class="feat">
+        <svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="10" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 9l6 4-6 4z" fill="currentColor"/></svg>
+        <h3>Today's playlist</h3>
+        <p>Today's sessions play like tracks. Start the focus timer, and the session checks itself off when the time is up.</p>
+      </div>
+      <div class="feat">
+        <svg viewBox="0 0 26 26" aria-hidden="true"><path d="M4 20h18" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="12" width="4" height="6" rx="1" fill="currentColor"/><rect x="11" y="7" width="4" height="11" rx="1" fill="currentColor"/><rect x="18" y="4" width="4" height="14" rx="1" fill="currentColor"/></svg>
+        <h3>Subjects and % ready</h3>
+        <p>Each subject shows a countdown to its exam and how ready you are, based on what you've finished and how confident you feel.</p>
+      </div>
+      <div class="feat">
+        <svg viewBox="0 0 26 26" aria-hidden="true"><path d="M5 7h16M5 13h16M5 19h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="21" cy="19" r="2.5" fill="currentColor"/></svg>
+        <h3>Deadlines</h3>
+        <p>Assignments with priority and status: to do, in progress, done or overdue. Lab reports get finished a day early.</p>
+      </div>
+      <div class="feat">
+        <svg viewBox="0 0 26 26" aria-hidden="true"><path d="M13 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 13 3zM10 22h6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        <h3>Tips and alerts</h3>
+        <p>A daily tip based on your plan, plus a warning when you're short on prep time or studying too many hours in a row.</p>
+      </div>
+      <div class="feat">
+        <svg viewBox="0 0 26 26" aria-hidden="true"><path d="M4 6h18v11H11l-5 4v-4H4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <h3>Replan by chat</h3>
+        <p>Type “I'm sick on Thursday” and your week is rebuilt around it. Aevia moves the sessions, not your exam dates.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tools">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">Four AI tools</span>
+        <h2>Ask your plan <span class="gold">anything</span></h2>
+      </div>
+      <p>Each tool works on your real plan, so every answer is about your subjects and your week.</p>
+    </div>
+    <div class="tools">
+      <article class="tool">
+        <div class="tool-top"><h3>Plan my day</h3><span class="eyebrow">Tool 1</span></div>
+        <p>Tell it how much time you actually have. You get the exact sessions that matter most.</p>
+        <div class="ask">I only have 2 hours tonight</div>
+        <div class="ans">
+          <div class="row"><span>19:00 · 50 min</span><span>DBMS · Normalization to 3NF</span></div>
+          <div class="row"><span>19:55 · 45 min</span><span>OS · Deadlocks and Banker's algorithm</span></div>
+          <div class="row"><span>20:45 · 20 min</span><span>Flashcard recap of both</span></div>
+        </div>
+      </article>
+      <article class="tool star">
+        <div class="tool-top"><h3>Butterfly effect</h3><span class="eyebrow">Tool 2</span></div>
+        <p>See what skipping a day costs before you decide. Other planners reschedule after you miss a day. Aevia shows you the result first.</p>
+        <div class="ask">Skip today</div>
+        <div class="delta">
+          <div><b><s>59% →</s> 55%</b><small>Exam readiness</small></div>
+          <div><b>2 h 30 min</b><small>Study time lost</small></div>
+          <div><b>+25 min</b><small>Extra per day to recover</small></div>
+        </div>
+        <p class="note">Future you, Thursday night: “Glad you did the joins today. The OS paper had three of them.”</p>
+      </article>
+      <article class="tool star">
+        <div class="tool-top"><h3>Teach it back</h3><span class="eyebrow">Tool 3</span></div>
+        <p>Explain a topic in your own words. Aevia scores it, points out what you got wrong, and moves weak topics earlier in your plan.</p>
+        <div class="score"><b class="gold">45</b><small>/ 100 · Normalization</small></div>
+        <div class="flag">
+          <span><s>“Normalization makes queries faster.”</s></span>
+          <span>It reduces duplicate data. The extra joins can make some reads slower.</span>
+        </div>
+        <p style="color:var(--muted);font-size:14px">Plan updated: Normalization moved to tomorrow, 18:00.</p>
+      </article>
+      <article class="tool">
+        <div class="tool-top"><h3>Why this plan?</h3><span class="eyebrow">Tool 4</span></div>
+        <p>Every session has a reason. Ask for it and Aevia explains it in plain words.</p>
+        <div class="ask">Why is OS first on Monday?</div>
+        <div class="ans">
+          <div class="row"><span>Exam</span><span>In 6 days, the closest one</span></div>
+          <div class="row"><span>Confidence</span><span>2 out of 5, your lowest</span></div>
+          <div class="row"><span>Syllabus left</span><span>40%, about 7 hours of work</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">How it works</span>
+        <h2>From a paragraph to <span class="gold">a full plan</span></h2>
+      </div>
+    </div>
+    <div class="how">
+      <div><span class="t">Step 1</span><h3>Describe your semester</h3><p>Write it the way you'd tell a friend: “DBMS exam on the 7th, OS lab due this Friday, I'm a night owl.” Aevia fills in your dashboard.</p></div>
+      <div><span class="t">Step 2</span><h3>Get a timetable</h3><p>The planner builds your week, putting the most urgent work first and weighting each subject by priority, difficulty and confidence.</p></div>
+      <div><span class="t">Step 3</span><h3>Adjust as you go</h3><p>Mark sessions done, teach topics back, or tell it about a bad day. Your plan updates and shows you exactly what moved.</p></div>
+    </div>
+    <div class="trust">
+      <h3>Is the AI just making up a schedule?</h3>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <p><b>No.</b> A scheduling engine builds the timetable, so every plan fits your hours and meets every deadline. The AI reads what you write, explains the plan and changes its inputs.</p>
+        <p>If the AI is ever unavailable, your planner keeps working.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="sec-head">
+      <div>
+        <span class="eyebrow">Get started</span>
+        <h2>Start your <span class="gold">study plan</span></h2>
+      </div>
+      <p>Two quick questions to get you going. Pick whatever fits you best today; you can change it later.</p>
+    </div>
+    <div class="qs">
+      <div class="q">
+        <span class="eyebrow">Question 1 of 2</span>
+        <h3>What are you studying right now?</h3>
+        <div class="chips" role="group" aria-label="What are you studying right now?">
+          <button type="button">School (Class 9–12)</button><button type="button">College</button><button type="button">Competitive exam</button><button type="button">Learning a new skill</button>
+        </div>
+      </div>
+      <div class="q">
+        <span class="eyebrow">Question 2 of 2</span>
+        <h3>When do you focus best?</h3>
+        <div class="chips" role="group" aria-label="When do you focus best?">
+          <button type="button">Early morning</button><button type="button">Afternoon</button><button type="button">Evening</button><button type="button">Late night</button>
+        </div>
+      </div>
+    </div>
+    <div class="go">
+      <a class="btn" href="#start" id="go">Build my study plan
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+      </a>
+      <p id="go-note">Answer both questions to continue.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+        <defs><linearGradient id="lg2" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#8E6A48"/><stop offset=".55" stop-color="#C9A176"/><stop offset="1" stop-color="#EFD2A6"/></linearGradient></defs>
+        <path d="M49 5 L57 5 L88 90 L70 90 L52 36 Z" fill="currentColor"/>
+        <path d="M49 5 L52 12 L26 90 L20 90 Z" fill="currentColor"/>
+        <path d="M13 90 C30 66 55 49 86 50 C62 55 40 68 24 90 Z" fill="url(#lg2)"/>
+      </svg>
+      <div><b>Aevia</b><small>Your AI Study Planner</small></div>
+    </div>
+    <span>© 2026 Aevia · Plan the semester. Then study it.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  // Onboarding chips: one pick per question
+  const picks={};
+  const note=document.getElementById('go-note');
+  document.querySelectorAll('.chips').forEach((g,i)=>g.addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    picks[i]=b.textContent;
+    note.textContent=picks[0]&&picks[1]?`${picks[0]}, focusing best in the ${picks[1].toLowerCase()}. Your plan will start there.`:'Answer both questions to continue.';
+  }));
+  document.getElementById('go').addEventListener('click',e=>{
+    if(!(picks[0]&&picks[1])){e.preventDefault();note.textContent='Pick one answer for each question first.';}
+  });
+
+  // Focus timer in the hero pill and the playlist chip
+  const focus=document.getElementById('focus'),chip=document.getElementById('chip-now');
+  let left=25*60;
+  const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  setInterval(()=>{left=left>0?left-1:25*60;focus.textContent=`FOCUS ${fmt(left)} · DBMS · SESSION 2 OF 4`;chip.textContent=`▶ ${fmt(left)} left`;},1000);
+
+  // Window scene
+  const cv=document.getElementById('scene'),ctx=cv.getContext('2d');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W=0,H=0,C={},stars=[],cons=[];
+  const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  ['--sky-top','--sky-bot','--sun','--hill-far','--hill-mid','--hill-near','--pole'].forEach(k=>C[k]=css(k));
+  function size(){
+    const r=cv.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);
+    W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+    stars=Array.from({length:110},()=>({x:Math.random()*W,y:Math.random()*H*.55,r:Math.random()*1.1+.3,a:Math.random()*.6+.25,tw:Math.random()*6}));
+    const cx=W*.2,cy=H*.12;
+    cons=[[0,0],[.07,.06],[.13,.03],[.19,.1],[.16,.19],[.24,.16],[.3,.08]].map(([x,y])=>({x:cx+x*W,y:cy+y*H}));
+  }
+  const ridge=(x,seed,amp)=>Math.sin(x*.0021+seed)*amp+Math.sin(x*.0053+seed*2.3)*amp*.45+Math.sin(x*.013+seed*.7)*amp*.14;
+  const layers=[
+    {c:'--hill-far',base:.58,amp:.07,speed:.05,seed:1.2},
+    {c:'--hill-mid',base:.7,amp:.06,speed:.14,seed:3.8},
+    {c:'--hill-near',base:.83,amp:.035,speed:.5,seed:6.1}
+  ];
+  let off=0,last=performance.now(),t=0;
+  function draw(){
+    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,C['--sky-top']);g.addColorStop(1,C['--sky-bot']);
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#F3E2C4';
+    stars.forEach(s=>{ctx.globalAlpha=s.a*(.75+.25*Math.sin(t*.002+s.tw));ctx.beginPath();ctx.arc((s.x-off*.01+W*10)%W,s.y,s.r,0,7);ctx.fill();});
+    // constellation
+    ctx.globalAlpha=.45;ctx.strokeStyle='#C9A176';ctx.lineWidth=.8;ctx.beginPath();
+    cons.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+    ctx.globalAlpha=1;ctx.fillStyle='#EDCFA3';cons.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,1.8,0,7);ctx.fill();});
+    // moon with orbits
+    const sx=W*.72,sy=H*.32,sr=Math.max(26,H*.09);
+    const glow=ctx.createRadialGradient(sx,sy,sr*.6,sx,sy,sr*4.5);glow.addColorStop(0,'rgba(234,211,172,.35)');glow.addColorStop(1,'rgba(234,211,172,0)');
+    ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(201,161,118,.35)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(sx,sy,sr*2.3,sr*.9,-.25,0,7);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(sx,sy,sr*1.7,sr*1.9,.6,0,7);ctx.stroke();
+    const a=t*.0004;ctx.fillStyle='#EDCFA3';ctx.beginPath();
+    ctx.arc(sx+Math.cos(a)*sr*2.3*Math.cos(-.25)-Math.sin(a)*sr*.9*Math.sin(-.25),sy+Math.cos(a)*sr*2.3*Math.sin(-.25)+Math.sin(a)*sr*.9*Math.cos(-.25),3,0,7);ctx.fill();
+    const mg=ctx.createRadialGradient(sx-sr*.35,sy-sr*.35,sr*.1,sx,sy,sr);mg.addColorStop(0,'#F6E3C2');mg.addColorStop(.7,C['--sun']);mg.addColorStop(1,'#A9855E');
+    ctx.fillStyle=mg;ctx.beginPath();ctx.arc(sx,sy,sr,0,7);ctx.fill();
+    layers.forEach(L=>{
+      ctx.fillStyle=C[L.c];ctx.beginPath();ctx.moveTo(0,H);
+      for(let x=0;x<=W+8;x+=8){ctx.lineTo(x,H*L.base+ridge(x+off*L.speed,L.seed,H*L.amp));}
+      ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+    });
+    const gap=Math.max(260,W*.32),p=(off*1.4)%gap;
+    ctx.strokeStyle=C['--pole'];ctx.fillStyle=C['--pole'];ctx.lineWidth=1.2;
+    const tops=[];
+    for(let x=-p;x<W+gap;x+=gap){const top=H*.2;tops.push(x);ctx.fillRect(x-3,top,6,H-top);ctx.fillRect(x-22,top+10,44,4);}
+    for(let i=0;i<tops.length-1;i++){
+      [H*.2+12,H*.2+30].forEach((y,j)=>{ctx.beginPath();ctx.moveTo(tops[i]+(j?12:-18),y);ctx.quadraticCurveTo((tops[i]+tops[i+1])/2,y+H*.05,tops[i+1]+(j?12:-18),y);ctx.stroke();});
+    }
+  }
+  function frame(now){
+    const dt=Math.min(now-last,50);last=now;off+=dt*.9;t+=dt;
+    draw();requestAnimationFrame(frame);
+  }
+  size();
+  addEventListener('resize',()=>{size();draw();});
+  if(reduce){off=400;draw();}
+  else requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
